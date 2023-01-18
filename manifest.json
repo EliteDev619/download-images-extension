@@ -1,0 +1,12 @@
+{
+    "name": "My Jokes",
+    "description": "A collection of my favorite jokes",
+    "version": "1.0",
+    "manifest_version": 3,
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "My Jokes",
+        "default_icon": "icon.png"
+    },
+    "permissions": [ "activeTab", "downloads", "storage", "webRequest", "scripting", "declarativeNetRequest" ]
+}
