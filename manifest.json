@@ -15,7 +15,7 @@
        }
     },
     "default_locale": "en",
-    "description": "__MSG_appDesc__",
+    "description": "Download images from any website with one click.",
     "host_permissions": [ "http://*/*", "https://*/*", "\u003Call_urls>" ],
     "icons": {
        "128": "icon.png"

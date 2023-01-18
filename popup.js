@@ -4,7 +4,7 @@ var conf={
         minheight:0,
         downloadseparatefolder:false,
         downloadfolderpref:"basedonurl",
-        savefoldername:"imageye",
+        savefoldername:"fastImages",
         donotbother:false,
         numviews:0,
         allframes:false,
@@ -21,7 +21,7 @@ var conf={
     urlpattern:"",
     downloadseparatefolder:false,
     downloadfolderpref:"basedonurl",
-    savefoldername:"imageye",
+    savefoldername:"fastImages",
     donotbother:false,
     changed:false,
     allframes:false,
@@ -33,7 +33,7 @@ var conf={
     savesize:false,
     sizetype:"any"
 }
-var imageye={
+var fastImages={
     darkmode:window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
     imageCT:new Object(),
     selection:new Object(),
@@ -46,27 +46,27 @@ var imageye={
         chrome.runtime.sendMessage({msg: "getImagesCT"}, function(response) {
             //dummy call for waking the bg service worker
         });
-        imageye.initiated=false;
+        fastImages.initiated=false;
         var allFrames=conf.allframes;
         if(allFrames)
             allFrames=!onlyTopFrame;
-        imageye.allimages=new Object();
-        imageye.monitorStatus(onlyTopFrame);
+        fastImages.allimages=new Object();
+        fastImages.monitorStatus(onlyTopFrame);
         //reset old results
         var ihtml='<div id="spinner" class="spinner"><span id="processedImages" style="position: absolute;top: -38px;left: 50%;transform:translateX(-50%);white-space:nowrap;"></span><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>';
         if($("#imgsContainer")[0].innerHTML.trim()!=ihtml){
             $("#imgsContainer")[0].innerHTML=ihtml;
         }
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            imageye.currUrl=tabs[0].url;
-            chrome.scripting.executeScript({target:{tabId:tabs[0].id,allFrames: allFrames}, files:['app.js']}, (res) => {imageye.getImagesCallback(res);})
+            fastImages.currUrl=tabs[0].url;
+            chrome.scripting.executeScript({target:{tabId:tabs[0].id,allFrames: allFrames}, files:['app.js']}, (res) => {fastImages.getImagesCallback(res);})
         })
     },
     getImagesCallback: async function(results){
-        if(imageye.initiated)
+        if(fastImages.initiated)
             return
         console.log(results);
-        imageye.initiated=true;
+        fastImages.initiated=true;
         if(chrome.extension.lastError || !results){
             var message=chrome.extension.lastError?chrome.extension.lastError.message:"Cannot access images in this page."
             if(message.indexOf("The extensions gallery cannot be scripted")!=-1 || message.indexOf("Missing host permission for the tab")!=-1){
@@ -98,7 +98,7 @@ var imageye={
                 }
             }
             if(totalImages==0){
-                imageye.foundlastimage();
+                fastImages.foundlastimage();
                 return;
             }
             
@@ -111,7 +111,7 @@ var imageye={
                 var images=results[r].result.images;
                 console.log("images length: "+images.length);
                 if(results[r].result.isTop)
-                    imageye.title=results[r].result.title;
+                    fastImages.title=results[r].result.title;
                 var fixRefererRules=[];
                 var deleteOldRefererRules=[];
                 for(var i=0;i<images.length;i++){
@@ -139,11 +139,11 @@ var imageye={
                 for(var i=0;i<images.length;i++){
                     try{
                         console.log("going to inject img: "+images[i]);
-                        if(imageye.allimages[images[i]]){
+                        if(fastImages.allimages[images[i]]){
                             processedImages++;
                             continue;
                         }
-                        imageye.allimages[images[i]]=images[i];
+                        fastImages.allimages[images[i]]=images[i];
                         var img=document.createElement("img");
                         img.src=images[i];
                         img.style.maxWidth="600px";
@@ -151,7 +151,7 @@ var imageye={
                             processedImages++;
                             $("#processedImages")[0].innerHTML="analyzing "+processedImages+" of "+totalImages+" images";
                             if(processedImages==totalImages){
-                                imageye.foundlastimage();
+                                fastImages.foundlastimage();
                             }
                         }
                         var timeout=setTimeout(function(img){
@@ -236,10 +236,10 @@ var imageye={
                                     return;
                                 }
                                 
-                                imageye.selectImg(this);
+                                fastImages.selectImg(this);
                             }
                             if(processedImages==totalImages)
-                                imageye.foundlastimage();
+                                fastImages.foundlastimage();
                         }
                     }catch(e){
                         console.log(e);
@@ -252,19 +252,19 @@ var imageye={
         var src=conf.web2jpg && div.getAttribute("convertedimgsrc")?div.getAttribute("convertedimgsrc") : div.getAttribute("imgsrc")
         var checkbox=div.querySelector('input[type="checkbox"]');
         
-        var toSelect=force?forceValue:!imageye.selection[src];
+        var toSelect=force?forceValue:!fastImages.selection[src];
         if(toSelect){
             checkbox.checked="checked";
-            imageye.selection[src]=src;
+            fastImages.selection[src]=src;
             div.classList.add("imgSelected");
         }else{
             checkbox.checked="";
-            delete imageye.selection[src];
+            delete fastImages.selection[src];
             div.classList.remove("imgSelected");
         }
         var selectionLength=0;
-        for (var k in imageye.selection) {
-            if (imageye.selection.hasOwnProperty(k)) 
+        for (var k in fastImages.selection) {
+            if (fastImages.selection.hasOwnProperty(k)) 
                 selectionLength++;
         }
         if(selectionLength==0){
@@ -281,14 +281,14 @@ var imageye={
     },
     monitorStatus:function(onlyTopFrame){
         setTimeout(function(){
-            if(imageye.initiated)
+            if(fastImages.initiated)
                 return
             if(!onlyTopFrame){
-                imageye.getImages(true)
+                fastImages.getImages(true)
                 return;
             }
             //var img=document.createElement("img");
-            //img.src="https://www.marenauta.com/imageyeerror?url="+imageye.currUrl;
+            //img.src="https://www.marenauta.com/fastImageserror?url="+fastImages.currUrl;
             var message="Something went wrong, Please refresh this page."
             $("#imgsContainer")[0].innerHTML="<br><br><br><br><br><br><br><br><br><br><br><br><br><br><center>"+message+"<br><br><a href='#' id='reloada'>Refresh</a></center><br><br><br><br>";
             $("#reloada")[0].onclick = function() {
@@ -354,7 +354,7 @@ var imageye={
         }
     },
     openRatingTab: function(){
-        window.open("https://chrome.google.com/webstore/detail/imageye-image-downloader/agionbommeaifngbhincahgmoflcikhm/reviews");
+        window.open("https://chrome.google.com/webstore/detail/fastImages-image-downloader/agionbommeaifngbhincahgmoflcikhm/reviews");
     },
     downloadImages:async function(){
         //39sec 204 immagini - con 300ms
@@ -362,8 +362,8 @@ var imageye={
         //2:16  774/780 immagini - con 300ms
         //2:24  /780 immagini - con 1000ms
         var urls=[];
-        for (var k in imageye.selection) 
-            if (imageye.selection.hasOwnProperty(k)) 
+        for (var k in fastImages.selection) 
+            if (fastImages.selection.hasOwnProperty(k)) 
                 urls[urls.length]=k;
         
         var progressBack=document.createElement("div");
@@ -394,8 +394,8 @@ var imageye={
         //4:00 774/780 immagini - con 300ms
         //FAILED ??/780 immagini - con 100ms 
         var urls=[];
-        for (var k in imageye.selection) 
-            if (imageye.selection.hasOwnProperty(k)) 
+        for (var k in fastImages.selection) 
+            if (fastImages.selection.hasOwnProperty(k)) 
                 urls[urls.length]=k;
         
         var progressBack=document.createElement("div");
@@ -419,7 +419,7 @@ var imageye={
         progressBack.remove();
     },
     suggestFileName:function(item,suggest){
-        var title="Imageye - " + imageye.title;
+        var title="fastImages - " + fastImages.title;
         if(conf.downloadfolderpref=="usefixedfoldername")
             title=conf.savefoldername || conf.defaults.savefoldername;
         title=title.replace(new RegExp('[^0-9a-zA-Z-_ ]', 'g'), "_")
@@ -444,25 +444,25 @@ var imageye={
         if(conf.twocols)
             $("#container").addClass("twocols")
         if(conf.hidetools)
-            imageye.showTools(false);
+            fastImages.showTools(false);
         setTimeout(function(){
             $("#container")[0].style.maxWidth=document.body.offsetWidth+"px";
         },100);
         
-        imageye.localize();
-        imageye.initSizeMenu();
-        imageye.getImages();
+        fastImages.localize();
+        fastImages.initSizeMenu();
+        fastImages.getImages();
         
         if(chrome.downloads.onDeterminingFilename)
-            chrome.downloads.onDeterminingFilename.addListener(imageye.suggestFileName);
+            chrome.downloads.onDeterminingFilename.addListener(fastImages.suggestFileName);
         
         $("#toolsButton")[0].onclick = function(){
-            imageye.showTools();
+            fastImages.showTools();
         }
-        $("#showPrefs")[0].onclick = imageye.showPrefs;
+        $("#showPrefs")[0].onclick = fastImages.showPrefs;
         
-        $("#saveprefscancel")[0].onclick=imageye.showPrefs
-        $("#saveprefs")[0].onclick=imageye.savePrefs       
+        $("#saveprefscancel")[0].onclick=fastImages.showPrefs
+        $("#saveprefs")[0].onclick=fastImages.savePrefs       
         
         $("#downloadseparatefolder")[0].onclick=function(){
             $("#downloadocationcontainer")[0].style.display=$("#downloadseparatefolder")[0].checked?"block":"none";
@@ -502,8 +502,8 @@ var imageye={
         $("#selectalla")[0].onclick = function(){
             var allimages=$(".imgContainer:not(.excluded)");
             var selectionLength=0;
-            for (var k in imageye.selection) {
-                if (imageye.selection.hasOwnProperty(k)) 
+            for (var k in fastImages.selection) {
+                if (fastImages.selection.hasOwnProperty(k)) 
                     selectionLength++;
             }
             var toSelect=true;
@@ -511,13 +511,13 @@ var imageye={
                 toSelect=false;
             }
             allimages.each(function(){
-                imageye.selectImg(this,true,toSelect);
+                fastImages.selectImg(this,true,toSelect);
             })
         }
         $("#downloadButton")[0].onclick = function(){
             var selectionLength=0;
-            for (var k in imageye.selection)
-                if (imageye.selection.hasOwnProperty(k)) 
+            for (var k in fastImages.selection)
+                if (fastImages.selection.hasOwnProperty(k)) 
                     selectionLength++;
             if(selectionLength>2 && !conf.donotbother){
                 if(navigator.userAgent.indexOf("Firefox") != -1){
@@ -531,7 +531,7 @@ var imageye={
                     chrome.storage.sync.set({
                         donotbother: conf.donotbother
                     });
-                    imageye.downloadImages();
+                    fastImages.downloadImages();
                     $("#manyfiles")[0].style.display="none";
                 }
                 $("#manyfilescancel")[0].onclick=function(){
@@ -540,7 +540,7 @@ var imageye={
                 $("#donotbotherme")[0].checked=false;
                 return;
             }
-            imageye.downloadImages();
+            fastImages.downloadImages();
         }
         $("#filterbyurlinput").on("input",function(event){
             var inputurl=this.value;
@@ -554,25 +554,25 @@ var imageye={
             if(event.keyCode === 13) {
                 $(event.target).closest(".selectMenu").hide();
             }
-            if(imageye.inputtimeout)
-                clearTimeout(imageye.inputtimeout)
-            imageye.inputtimeout=setTimeout( function(){
+            if(fastImages.inputtimeout)
+                clearTimeout(fastImages.inputtimeout)
+            fastImages.inputtimeout=setTimeout( function(){
                 conf.urlpattern=inputurl;
-                imageye.foundlastimage();
+                fastImages.foundlastimage();
             },300);
         })
-        $("#ratebutton")[0].onclick = imageye.openRatingTab
-        $("#rateclose")[0].onclick = imageye.showRating
+        $("#ratebutton")[0].onclick = fastImages.openRatingTab
+        $("#rateclose")[0].onclick = fastImages.showRating
         $( ".filters > div div[saveSize]" ).on( "click", function(event) {
             var saveSizeEl=$(this);
             if(conf.savesize){
                 conf.savesize=false;
                 saveSizeEl.removeClass("selected");
-                imageye.saveSizeConf(true);
+                fastImages.saveSizeConf(true);
             }else{
                 conf.savesize=true;
                 saveSizeEl.addClass("selected");
-                imageye.saveSizeConf();
+                fastImages.saveSizeConf();
             }
             chrome.storage.sync.set({
                 savesize: conf.savesize
@@ -619,16 +619,16 @@ var imageye={
                 menuLabel.html(sizeConf.charAt(0).toUpperCase() + sizeConf.slice(1))
             }
             $(event.target).addClass("selected")
-            imageye.foundlastimage();
+            fastImages.foundlastimage();
             $(sizeMenu).hide();
         })
         $("#minwidthinput").on("input",function(event) {
             event.preventDefault();
-            imageye.setCustomSize()
+            fastImages.setCustomSize()
         })
         $("#minheightinput").on("input",function(event) {
             event.preventDefault();
-            imageye.setCustomSize()
+            fastImages.setCustomSize()
         })
         $(".typeMenu").on("click",function(event){
             var typeMenu=this;
@@ -648,7 +648,7 @@ var imageye={
                 menuLabel.html(conf.imgtype)
             }
             $(event.target).addClass("selected")
-            imageye.foundlastimage();
+            fastImages.foundlastimage();
             $(typeMenu).hide();
         })
         $(".layoutMenu").on("click",function(event){
@@ -669,11 +669,11 @@ var imageye={
                 menuLabel.html(conf.layout.charAt(0).toUpperCase() + conf.layout.slice(1))
             }
             $(event.target).addClass("selected")
-            imageye.foundlastimage();
+            fastImages.foundlastimage();
             $(layoutMenu).hide();
         })
         $(".clearFilters").on("click",function(){
-            imageye.saveSizeConf(true);
+            fastImages.saveSizeConf(true);
             document.location.reload()
         });
     },
@@ -692,7 +692,7 @@ var imageye={
             $(this).removeClass("selected");
         });
         $("#sizeTab").find("div[sizeConf=custom]").addClass("selected");
-        imageye.foundlastimage();
+        fastImages.foundlastimage();
     },
     showTools:function(show){
         if(typeof show === 'undefined')
@@ -746,13 +746,13 @@ var imageye={
                 conf.minheight=items.minheight;
                 callback();
                 
-                imageye.numviews=items.numviews+1;
-                var howoftentoshowrating=imageye.numviews>1000?100000:imageye.numviews>100?1000:imageye.numviews>10?100:10;
-                if(imageye.numviews%howoftentoshowrating==0){
-                    imageye.showRating();
+                fastImages.numviews=items.numviews+1;
+                var howoftentoshowrating=fastImages.numviews>1000?100000:fastImages.numviews>100?1000:fastImages.numviews>10?100:10;
+                if(fastImages.numviews%howoftentoshowrating==0){
+                    fastImages.showRating();
                 }
                 chrome.storage.sync.set({
-                    numviews: imageye.numviews
+                    numviews: fastImages.numviews
                 });
             }
         );
@@ -777,10 +777,10 @@ var imageye={
             console.log("getImagesCT response.imagesCT:" +response.imagesCT);
             var imagesCT=response.imagesCT;
             if(conf.savesize)
-                imageye.saveSizeConf();
+                fastImages.saveSizeConf();
             $(".imgContainer").each(function(){
                 var div=$(this);
-                imageye.selectImg(this,true,false);//reset old selection
+                fastImages.selectImg(this,true,false);//reset old selection
                 div[0].className="imgContainer";
                 var imgSrc=div.attr("imgsrc");
                 var imgWidth=parseInt(div.attr("width"));
@@ -837,7 +837,7 @@ var imageye={
                 }
                 
                 if(dimension)
-                    div.find(".imgDimension").html(imageye.formatBytes(dimension,0));
+                    div.find(".imgDimension").html(fastImages.formatBytes(dimension,0));
                 
                 
                 if(conf.imgtype && imgType!=conf.imgtype){
@@ -859,13 +859,13 @@ var imageye={
                 
             })
             
-            imageye.selection=new Object();//reset old selection
+            fastImages.selection=new Object();//reset old selection
             
             var sizeSelector=".imgContainer:not(.excludedUrl):not(.excludedType):not(.excludedLayout)";
             var typeSelector=".imgContainer:not(.excludedUrl):not(.excludedSize):not(.excludedLayout)";
             var layoSelector=".imgContainer:not(.excludedUrl):not(.excludedSize):not(.excludedType)";
             
-            imageye.stats={
+            fastImages.stats={
                 size:{
                     "any":$(sizeSelector).length,
                     "small":$(sizeSelector+"[sizeType='small']").length,
@@ -895,7 +895,7 @@ var imageye={
             //conf.imgtype=$(event.target).attr("typeConf");
             $(".typeMenu").find("div[typeConf]").each(function(){
                 var currType=$(this).attr("typeConf");
-                var currTypeNum=imageye.stats.types[currType];
+                var currTypeNum=fastImages.stats.types[currType];
                 currTypeNum=currTypeNum||0;
                 $(this).html(currType.charAt(0).toUpperCase() + currType.slice(1)+" ("+currTypeNum+")");
                 this.style.setProperty('color',currTypeNum?"inherit":"lightGray", currTypeNum?"":"important");
@@ -905,14 +905,14 @@ var imageye={
                 var currSize=$(this).attr("sizeConf");
                 if(currSize=="custom")
                     return
-                var currSizeNum=imageye.stats.size[currSize];
+                var currSizeNum=fastImages.stats.size[currSize];
                 currSizeNum=currSizeNum||0;
                 $(this).html(currSize.charAt(0).toUpperCase() + currSize.slice(1)+" ("+currSizeNum+")");
                 this.style.setProperty('color',currSizeNum?"inherit":"lightGray", currSizeNum?"":"important");
             });
             $(".layoutMenu").find("div[layoutConf]").each(function(){
                 var currLayout=$(this).attr("layoutConf");
-                var currLayoutNum=imageye.stats.layout[currLayout];
+                var currLayoutNum=fastImages.stats.layout[currLayout];
                 currLayoutNum=currLayoutNum||0;
                 $(this).html(currLayout.charAt(0).toUpperCase() + currLayout.slice(1)+" ("+currLayoutNum+")");
                 this.style.setProperty('color',currLayoutNum?"inherit":"lightGray", currLayoutNum?"":"important");
@@ -988,9 +988,9 @@ var imageye={
             }
             if($(".changedMenu").length>0){
                 $(".clearFilters").show();
-                imageye.showTools(true);
+                fastImages.showTools(true);
             }
         }
     }
 }
-imageye.getConf(imageye.init);
+fastImages.getConf(fastImages.init);
