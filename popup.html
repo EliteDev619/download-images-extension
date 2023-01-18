@@ -1,0 +1,799 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+  <head>
+    <title>Marenauta CRM</title>
+    <link rel="stylesheet" type="text/css" href="external/jquery-ui.min.css">
+    
+    <style>
+      html{
+        overflow:hidden;
+      }
+      body {
+        font-family: "Helvetica","Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+        font-size: 100%;
+        margin:0px;
+        -webkit-user-select: none;
+        color:#404040;
+        overflow:hidden;
+      }
+      a{
+          color:#106eb1;
+          text-decoration:none;
+      }
+      
+      input[type="checkbox"]{
+          appearance: none;
+          margin: 0px;
+          font: inherit;
+          color: currentColor;
+          width: 20px;
+          height: 20px;
+          border: 0.15em solid black;
+          border-radius: 5px;
+          transform: translateY(-0.075em);
+          display: inline-grid;
+          place-content: center;
+      }
+      input[type="checkbox"]:hover::before{
+        opacity:0.4;
+      }
+      input[type="checkbox"]::before {
+          content: "";
+          width: 0.75em;
+          height: 0.75em;
+          opacity:0;
+          box-shadow: inset 1em 1em black;
+          transform-origin: bottom left;
+          clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+      }
+      input[type="checkbox"]:checked{
+          background-color: black;
+      }
+      input[type="checkbox"]:checked::before {
+          opacity:1;
+          box-shadow: inset 1em 1em #fff;
+      }
+      #prefsDiv input[type="checkbox"]{
+          margin: 5px;
+          margin-left: 0px;
+          margin-right: 6px;
+      }
+      #container {
+          width: 500px;
+          height:600px;
+          float: left;
+          display: flex;
+          flex-direction: column;
+          justify-content: start;
+      }
+      #container.bigger{
+          width:800px;
+      }
+      #imgsContainer{
+          float:left;
+          width:100%;
+          overflow-x: hidden;
+          overflow-y: auto;
+          padding-top:10px;
+          background-color:#e8eaed;
+          box-sizing: border-box;
+          flex-grow: 2;
+          height:100%;
+          position:relative;
+      }
+      .imgContainer{
+          float:left;
+          display:none;
+          width: calc(100% - 21px);
+          -webkit-box-pack: center;
+          -webkit-box-align: center;
+          overflow:hidden;
+          float:left;
+          position:relative;
+          margin:0px 0px 11px 11px;
+          box-shadow: 0px 1px 5px rgb(187 187 187 / 30%);
+          padding:45px 0px 30px 0px;
+          background-color: #fff;
+          border-radius: 10px;
+          border:4px solid transparent;
+          box-sizing: border-box;
+      }
+      .imgContainer img{
+          max-width:100%;
+          max-height:400px;
+      }
+      .bigger .imgContainer img{
+          max-height:800px;
+      }
+      .twocols .imgContainer{
+          width:calc(50% - 16px);
+          height:170px;
+      }
+      .twocols .imgContainer img{
+          max-height:100%;
+      }
+      .bigger.twocols .imgContainer{
+          height:300px;
+      }
+      .new{
+          display: inline-block;
+          position: absolute;
+          font-size: 8px;
+          background: red;
+          padding: 1px 3px;
+          color: #fff;
+          border-radius: 100px;
+          z-index: 1000;
+          right: -10px;
+      }
+      .newshown1 .new{
+          display:none;
+      }
+      .origImg{
+          background-image: linear-gradient(45deg, #efefef 25%, transparent 25%, transparent 75%, #efefef 75%, #efefef),                                                                    linear-gradient(45deg, #efefef 25%, transparent 25%, transparent 75%, #efefef 75%, #efefef);
+          background-size:26px 26px;
+          background-position:0 0, 13px 13px;
+          margin:1px 1px 11px 0px;
+          background-color: #fff;
+      }
+      .imgInput{
+          position:absolute;
+          bottom:0px;
+          left:0px;
+          width:100%;
+          box-sizing:border-box;
+          color:#6b6969;
+          border:0px;
+          padding:2px 5px;
+      }
+      .noSelect {
+          -webkit-tap-highlight-color: transparent;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+      }
+      .noSelect:focus {
+          outline: none !important;
+      }
+      .filterInput{
+          -moz-appearance: textfield;
+          width: 38px;
+          border: 1px solid gray;
+          background: #222;
+          border-radius: 5px;
+          color: #fff;
+          margin:0px 2px;
+      }
+      .filterInput::-webkit-outer-spin-button,
+      .filterInput::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+      }
+
+      .imgInfo{
+          position: absolute;
+          padding: 12px;
+          width:100%;
+          box-sizing:border-box;
+          top: 0px;
+          left: 0px;
+      }
+      .imgSize{
+          float:right;
+          background: rgba(0,0,0,0.75);
+          padding: 4px 6px;
+          border-radius: 3px;
+          font-size: 12px;
+          color: #c6c5c5;
+          margin-top:-2px;
+      }
+      .downloadButton{
+          cursor:pointer;
+          white-space:nowrap;
+          float: left; 
+          border-radius: 5px;
+          padding: 7px 16px 7px 35px;
+          background-color:#106eb1;
+          color:#fff;
+          border:1px solid #106eb1;
+      }
+      .downloadButton.cancelButton{
+          background:none;
+          color:#404040;
+          border:1px solid #404040;
+      }
+      .statusdivcontainer .toolsButton{
+          padding-left: 16px;
+          visibility: visible;
+          float: right;
+          margin-right: 10px;
+          border-radius: 0px;
+          border-color:#7a7e83;
+          background: transparent;
+          color:inherit;
+          box-shadow: inset 0 1px 2px 0 rgb(0 0 0 / 10%)
+      }
+      .toolsButton:hover{
+          border-color:#7a7e83 !important;
+      }
+      .statusdivcontainer .toolsButton.inactive{
+          background: none;
+          border-color: transparent;
+          box-shadow:none;
+      }
+      .downloadButton img{
+          transition: transform .4s ease-in-out;
+          position:absolute;
+          left:21px;
+          width:16px;
+      }
+      .downloadButton:hover img{
+          transform:rotate(360deg);
+      }
+      .zoomIcon{
+          padding:0px 5px;
+          opacity:0;
+          height:20px;
+          position:relative;
+          top:-1px;
+          left:-4px;
+          cursor:pointer;
+      }
+      .imgContainer:hover .zoomIcon, .imgContainer:hover .imgActions{
+          opacity:0.9;
+      }
+      .twocols .imgContainer:hover .imgSize{
+          opacity:0.3;
+      }
+      .bigger.twocols .imgContainer:hover .imgSize{
+          opacity:1;
+      }
+      /*loading*/
+      .spinner {
+          left:50%;
+          top:50%;
+          transform: translate(-50%,-50%);
+          width: 70px;
+          text-align: center;
+          position:relative;
+      }
+
+      .spinner > div {
+        width: 18px;
+        height: 18px;
+        margin-left:5px;
+        background-color:#404040;
+
+        border-radius: 100%;
+        display: inline-block;
+        -webkit-animation: bouncedelay 1.4s infinite ease-in-out;
+        animation: bouncedelay 1.4s infinite ease-in-out;
+        /* Prevent first frame from flickering when animation starts */
+        -webkit-animation-fill-mode: both;
+        animation-fill-mode: both;
+      }
+
+      .spinner .bounce1 {
+        -webkit-animation-delay: -0.32s;
+        animation-delay: -0.32s;
+      }
+
+      .spinner .bounce2 {
+        -webkit-animation-delay: -0.16s;
+        animation-delay: -0.16s;
+      }
+
+      @-webkit-keyframes bouncedelay {
+        0%, 80%, 100% { -webkit-transform: scale(0.0) }
+        40% { -webkit-transform: scale(1.0) }
+      }
+
+      @keyframes bouncedelay {
+        0%, 80%, 100% { 
+          transform: scale(0.0);
+          -webkit-transform: scale(0.0);
+        } 40% { 
+          transform: scale(1.0);
+          -webkit-transform: scale(1.0);
+        }
+      }
+      .disableBackround{
+          position:fixed;
+          width:100%;
+          height:100%;
+          background-color:rgba(0,0,0,0.8);
+          z-index:1000;
+      }
+      progress{
+          height:4px;
+      }
+      progress, .progressText {
+          position:absolute;
+          top:50%;
+          left:50%;
+          top:50%;
+          width:50%;
+          transform:translate(-50%,-50%);
+          color:#e8eaed;
+      }
+      .progressText {
+        margin-top: -22px;
+    }
+      /*loading end*/
+      /*patches*/
+      .ui-widget-header {
+          background: #fff !important;
+      }
+      .ui-slider .ui-slider-handle{
+          background: #fff !important;
+          width:22px;
+          height:22px;
+          border-radius:50%;
+          top: -12px;
+          outline: none;
+          transition: background .3s ease-in-out;
+      }
+      .ui-slider .ui-slider-handle:focus {
+          border-color: #007eff;
+      }
+      .ui-slider-horizontal{
+          height:1px;
+          margin: 5px 0px;
+      }
+      .ui-widget.ui-widget-content{
+          border:none;
+          background: rgba(255,255,255,0.3)
+      }
+      .showPrefs #prefsDiv{
+          display:block !important;
+      }
+      .prefsTip{
+          font-size: 12px;
+          padding: 6px 5px;
+          display: block;
+          background: #e4e4e4;
+          box-sizing: border-box;
+          margin-top: 8px;
+          border-radius: 5px;
+          text-align: center;
+      }
+      .showRating #ratingDiv{
+          display:block !important;
+      }
+      .ui-slider .ui-slider-range{
+          box-sizing: border-box;
+      }
+      .filters{
+          float:left;
+          padding-top:5px;
+      }
+      .filters > div{
+          float:left;
+          bborder:1px solid lightGray;
+          padding:7px 23px 7px 10px;
+          margin-right:10px;
+          margin-left:-10px;
+          font-size: 14px;
+          bborder-radius: 100px;
+          transition: background-color 0.3s ease-out;
+          cursor: pointer;
+          position: relative;
+      }
+      .filters .menuLabel{
+          opacity:0.9;
+      }
+      .filters .selectMenu >div:hover{
+          background-color: rgba(0, 0, 0, 0.04);
+      }
+      .filters > div:hover{
+          opacity:1;
+          color:#609beb;
+      }
+      /*.filters > div:focus .selectMenu{
+          display:block;
+      }*/
+      .filters svg {
+          height: 18px;
+          position: absolute;
+          margin-top: -1px;
+          opacity:0.8;
+      }
+      .filters .selectMenu{
+          display:none;
+          position: absolute;
+          z-index: 10000;
+          background: #fff;
+          border: 1px solid lightgray;
+          box-shadow: 0.05em 4px 0.6em rgb(0 0 0 / 20%);
+          border-radius: 5px;
+          margin-top: 10px;
+          left: 0px;
+          width: max-content;
+          max-height: 400px;
+          overflow: auto;
+          color: initial;
+      }
+      .filters .selectMenu > div{
+          padding: 10px 10px 10px 30px;
+      }
+      .filters .selectMenu > div.selected{
+          background-image: url("check.svg");
+          background-size: 16px;
+          background-repeat: no-repeat;
+          background-position: 8px;
+      }
+      .filters .changedMenu{
+          font-weight:bold;
+          color:#609beb;
+          opacity:0.9;
+      }
+      .imgDimension{
+          ddisplay:none;
+      }
+      .excluded{
+          display:none !important;
+      }
+      .imgActions{
+          position: absolute;
+          background: rgba(255,255,255,0.9);
+          opacity:0;
+      }
+      .imgContainer:hover {
+          opacity:1;
+      }
+      .imgActions input[type="checkbox"]{
+          top: -3px;
+          position: relative;
+          margin-right: 12px;
+          border-radius: 4px;
+          height: 19px;
+          width: 19px;
+          opacity:0.8;
+      }
+      .statusdivcontainer{
+          padding: 0px 10px;
+          background-color: #fff;
+          width: 100%;
+          margin-right: 31px;
+          box-sizing: border-box;
+          bborder-bottom:1px solid #c5c5c5;
+          box-shadow: 0px 0px 5px rgb(187 187 187 / 80%);
+          z-index: 1;
+      }
+      .statusdivcontainer .downloadButton{
+          padding-top:5px;
+          padding-bottom:5px;
+          margin-top:3px;
+          margin-bottom:1px;
+          font-size:14px;
+      }
+      .imgSelected{
+          border:4px solid #106eb1;
+      }
+      .imgSelected .imgActions{
+          opacity:1;
+      }
+      .clearFilters{
+          padding-right:10px;
+          margin-right:0px;
+      }
+      .savesize{
+          border-top:1px solid lightGray;
+      }
+      .twoColsPref{
+          width: 18px;
+          float: right;
+          padding-right: 0px;
+          margin-right: 10px;
+          margin-top: 8px;
+          margin-left: 2px;
+          cursor: pointer;
+          opacity:0.9;
+      }
+      .twoColsPref:hover{
+          opacity: 1;
+      }
+      .twoColsPref div{
+          border-radius: 2px;
+          width:calc( 100% - 2px );
+          height:6px;
+          border:1px solid;
+          border-color:var(--fc);
+          float:left;
+      }
+      .twoColsPref div:nth-child(2), .twoColsPref div:nth-child(4) {
+          display: none;
+      }
+      .twocols .twoColsPref div{
+          width:6px;
+      }
+      .twocols .twoColsPref div:nth-child(2), .twocols .twoColsPref div:nth-child(4) {
+          display: block;
+      }
+      @media (prefers-color-scheme: dark) {
+          :root {
+              --bg: #292a2c;
+              --darkerbg: #0e0e0e;
+              --bgpng: #4a4a4a;
+              --fc: #e8eaed;
+              
+          }
+          body{
+              color:var(--fc);
+          }
+          a{
+              color:#27a5ff;
+          }
+          .filters svg{
+              filter:invert(0.9);
+          }
+          .statusdivcontainer{
+              background-color: var(--bg);
+              border-bottom-color: #1a1a1a;
+              box-shadow: none;
+          }
+          #showPrefs img{
+              filter:invert(0.9);
+              opacity:0.85;
+          }
+          #showPrefs:hover img{
+              opacity:1;
+          }
+          .filters .selectMenu{
+              background-color: var(--darkerbg);
+              border-color: var(--darkerbg);
+              box-shadow:0.05em 4px 0.6em rgb(0 0 0 / 40%);
+          }
+          .filters .selectMenu input{
+              background-color: transparent !important;
+              color:black;
+          }
+          .filters .selectMenu > div {
+              color:#000 !important;
+              filter:invert(0.8);
+          }
+          #imgsContainer{
+              background-color: var(--darkerbg);
+          }
+          .imgContainer{
+              background-color: var(--bg);
+              box-shadow: none;
+          }
+          input[type="checkbox"]{
+              filter:invert(0.9);
+          }
+          .zoomIcon{
+              filter:invert(0.9);
+          }
+          .zoomIcon:hover,input[type="checkbox"]:hover{
+              filter:invert(1);
+              opacity: 1 !important;
+          }
+          .imgInput{
+              background:var(--bg); 
+              color: #ebebeb;
+          }
+          .imgActions{
+              background: var(--bg) 0.9;
+          }
+          .origImg {
+              background-color: var(--bg);
+              background-image: linear-gradient(45deg, var(--bgpng) 25%, transparent 25%, transparent 75%, var(--bgpng) 75%, var(--bgpng)), linear-gradient(45deg, var(--bgpng) 25%, transparent 25%, transparent 75%, var(--bgpng) 75%, var(--bgpng));
+          }
+          #prefsDiv > div, #ratingDiv > div, #manyfiles > div{
+              background-color: var(--bg) !important; 
+          }
+          .downloadButton{
+              background-color:#3a3b3e;
+              border-color:#bfbfbf;
+              color:var(--fc);
+          }
+          .statusdivcontainer .toolsButton{
+              background:#3a3b3e;
+              border-color:#7a7e83;;
+              color:#d5d4d4;
+          }
+          .downloadButton:hover{
+              border-color:#7a7e83;
+          }
+          .downloadButton.cancelButton{
+              filter:invert(1);
+          }
+          .prefsTip{
+              background-color: var(--darkerbg);
+          }
+          #savefoldername{
+              filter:invert(1);
+              border:none;
+          }
+          .imgSelected{
+              border-color: #b6babd;
+          }
+          .new{
+              background-color: #fff;
+              color:#000;
+          }
+      }
+    </style>
+
+  </head>
+  <body>
+    <div id="container" style="ddisplay:none;">
+        <div class="statusdivcontainer">
+            <div id="statusdiv" style="padding: 5px 0px 8px 0px;">
+                <table style="width:100%;" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td style="padding:0px 14px 0px 0px;">
+                            <div id="foundimagesinnerdiv" style="white-space:nowrap;white-space:nowrap;padding: 7px 0px 7px 0px;">
+                                <span messagesKey="searchingImagesLabel" id="searchingimages" class="localizedSpan">Searching images...</span>
+                                <span messagesKey="foundLabel" class="localizedSpan" id="numimagesfound" style="display:none;">Found %n images</span></div>
+                            <div id="downloadButton" class="downloadButton" style="display:none;"></div>
+                        </td>
+                        <td style="width:100%;">
+                            <div id="selectalla" messagesKey="selectall" class="downloadButton cancelButton localizedSpan" style="padding-left:12px;visibility:hidden;">
+                                Select all
+                            </div>
+                            <div id="showPrefs" style="float:right;cursor:pointer;margin-top:2px;position:relative;">
+                                <div class="new">new</div>
+                                <img style="height: 19px;top: 5px;position: relative;" src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTkuMS4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDQ3OC43MDMgNDc4LjcwMyIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNDc4LjcwMyA0NzguNzAzOyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgd2lkdGg9IjUxMnB4IiBoZWlnaHQ9IjUxMnB4Ij4KPGc+Cgk8Zz4KCQk8cGF0aCBkPSJNNDU0LjIsMTg5LjEwMWwtMzMuNi01LjdjLTMuNS0xMS4zLTgtMjIuMi0xMy41LTMyLjZsMTkuOC0yNy43YzguNC0xMS44LDcuMS0yNy45LTMuMi0zOC4xbC0yOS44LTI5LjggICAgYy01LjYtNS42LTEzLTguNy0yMC45LTguN2MtNi4yLDAtMTIuMSwxLjktMTcuMSw1LjVsLTI3LjgsMTkuOGMtMTAuOC01LjctMjIuMS0xMC40LTMzLjgtMTMuOWwtNS42LTMzLjIgICAgYy0yLjQtMTQuMy0xNC43LTI0LjctMjkuMi0yNC43aC00Mi4xYy0xNC41LDAtMjYuOCwxMC40LTI5LjIsMjQuN2wtNS44LDM0Yy0xMS4yLDMuNS0yMi4xLDguMS0zMi41LDEzLjdsLTI3LjUtMTkuOCAgICBjLTUtMy42LTExLTUuNS0xNy4yLTUuNWMtNy45LDAtMTUuNCwzLjEtMjAuOSw4LjdsLTI5LjksMjkuOGMtMTAuMiwxMC4yLTExLjYsMjYuMy0zLjIsMzguMWwyMCwyOC4xICAgIGMtNS41LDEwLjUtOS45LDIxLjQtMTMuMywzMi43bC0zMy4yLDUuNmMtMTQuMywyLjQtMjQuNywxNC43LTI0LjcsMjkuMnY0Mi4xYzAsMTQuNSwxMC40LDI2LjgsMjQuNywyOS4ybDM0LDUuOCAgICBjMy41LDExLjIsOC4xLDIyLjEsMTMuNywzMi41bC0xOS43LDI3LjRjLTguNCwxMS44LTcuMSwyNy45LDMuMiwzOC4xbDI5LjgsMjkuOGM1LjYsNS42LDEzLDguNywyMC45LDguN2M2LjIsMCwxMi4xLTEuOSwxNy4xLTUuNSAgICBsMjguMS0yMGMxMC4xLDUuMywyMC43LDkuNiwzMS42LDEzbDUuNiwzMy42YzIuNCwxNC4zLDE0LjcsMjQuNywyOS4yLDI0LjdoNDIuMmMxNC41LDAsMjYuOC0xMC40LDI5LjItMjQuN2w1LjctMzMuNiAgICBjMTEuMy0zLjUsMjIuMi04LDMyLjYtMTMuNWwyNy43LDE5LjhjNSwzLjYsMTEsNS41LDE3LjIsNS41bDAsMGM3LjksMCwxNS4zLTMuMSwyMC45LTguN2wyOS44LTI5LjhjMTAuMi0xMC4yLDExLjYtMjYuMywzLjItMzguMSAgICBsLTE5LjgtMjcuOGM1LjUtMTAuNSwxMC4xLTIxLjQsMTMuNS0zMi42bDMzLjYtNS42YzE0LjMtMi40LDI0LjctMTQuNywyNC43LTI5LjJ2LTQyLjEgICAgQzQ3OC45LDIwMy44MDEsNDY4LjUsMTkxLjUwMSw0NTQuMiwxODkuMTAxeiBNNDUxLjksMjYwLjQwMWMwLDEuMy0wLjksMi40LTIuMiwyLjZsLTQyLDdjLTUuMywwLjktOS41LDQuOC0xMC44LDkuOSAgICBjLTMuOCwxNC43LTkuNiwyOC44LTE3LjQsNDEuOWMtMi43LDQuNi0yLjUsMTAuMywwLjYsMTQuN2wyNC43LDM0LjhjMC43LDEsMC42LDIuNS0wLjMsMy40bC0yOS44LDI5LjhjLTAuNywwLjctMS40LDAuOC0xLjksMC44ICAgIGMtMC42LDAtMS4xLTAuMi0xLjUtMC41bC0zNC43LTI0LjdjLTQuMy0zLjEtMTAuMS0zLjMtMTQuNy0wLjZjLTEzLjEsNy44LTI3LjIsMTMuNi00MS45LDE3LjRjLTUuMiwxLjMtOS4xLDUuNi05LjksMTAuOGwtNy4xLDQyICAgIGMtMC4yLDEuMy0xLjMsMi4yLTIuNiwyLjJoLTQyLjFjLTEuMywwLTIuNC0wLjktMi42LTIuMmwtNy00MmMtMC45LTUuMy00LjgtOS41LTkuOS0xMC44Yy0xNC4zLTMuNy0yOC4xLTkuNC00MS0xNi44ICAgIGMtMi4xLTEuMi00LjUtMS44LTYuOC0xLjhjLTIuNywwLTUuNSwwLjgtNy44LDIuNWwtMzUsMjQuOWMtMC41LDAuMy0xLDAuNS0xLjUsMC41Yy0wLjQsMC0xLjItMC4xLTEuOS0wLjhsLTI5LjgtMjkuOCAgICBjLTAuOS0wLjktMS0yLjMtMC4zLTMuNGwyNC42LTM0LjVjMy4xLTQuNCwzLjMtMTAuMiwwLjYtMTQuOGMtNy44LTEzLTEzLjgtMjcuMS0xNy42LTQxLjhjLTEuNC01LjEtNS42LTktMTAuOC05LjlsLTQyLjMtNy4yICAgIGMtMS4zLTAuMi0yLjItMS4zLTIuMi0yLjZ2LTQyLjFjMC0xLjMsMC45LTIuNCwyLjItMi42bDQxLjctN2M1LjMtMC45LDkuNi00LjgsMTAuOS0xMGMzLjctMTQuNyw5LjQtMjguOSwxNy4xLTQyICAgIGMyLjctNC42LDIuNC0xMC4zLTAuNy0xNC42bC0yNC45LTM1Yy0wLjctMS0wLjYtMi41LDAuMy0zLjRsMjkuOC0yOS44YzAuNy0wLjcsMS40LTAuOCwxLjktMC44YzAuNiwwLDEuMSwwLjIsMS41LDAuNWwzNC41LDI0LjYgICAgYzQuNCwzLjEsMTAuMiwzLjMsMTQuOCwwLjZjMTMtNy44LDI3LjEtMTMuOCw0MS44LTE3LjZjNS4xLTEuNCw5LTUuNiw5LjktMTAuOGw3LjItNDIuM2MwLjItMS4zLDEuMy0yLjIsMi42LTIuMmg0Mi4xICAgIGMxLjMsMCwyLjQsMC45LDIuNiwyLjJsNyw0MS43YzAuOSw1LjMsNC44LDkuNiwxMCwxMC45YzE1LjEsMy44LDI5LjUsOS43LDQyLjksMTcuNmM0LjYsMi43LDEwLjMsMi41LDE0LjctMC42bDM0LjUtMjQuOCAgICBjMC41LTAuMywxLTAuNSwxLjUtMC41YzAuNCwwLDEuMiwwLjEsMS45LDAuOGwyOS44LDI5LjhjMC45LDAuOSwxLDIuMywwLjMsMy40bC0yNC43LDM0LjdjLTMuMSw0LjMtMy4zLDEwLjEtMC42LDE0LjcgICAgYzcuOCwxMy4xLDEzLjYsMjcuMiwxNy40LDQxLjljMS4zLDUuMiw1LjYsOS4xLDEwLjgsOS45bDQyLDcuMWMxLjMsMC4yLDIuMiwxLjMsMi4yLDIuNnY0Mi4xSDQ1MS45eiIgZmlsbD0iIzAwMDAwMCIvPgoJCTxwYXRoIGQ9Ik0yMzkuNCwxMzYuMDAxYy01NywwLTEwMy4zLDQ2LjMtMTAzLjMsMTAzLjNzNDYuMywxMDMuMywxMDMuMywxMDMuM3MxMDMuMy00Ni4zLDEwMy4zLTEwMy4zUzI5Ni40LDEzNi4wMDEsMjM5LjQsMTM2LjAwMSAgICB6IE0yMzkuNCwzMTUuNjAxYy00Mi4xLDAtNzYuMy0zNC4yLTc2LjMtNzYuM3MzNC4yLTc2LjMsNzYuMy03Ni4zczc2LjMsMzQuMiw3Ni4zLDc2LjNTMjgxLjUsMzE1LjYwMSwyMzkuNCwzMTUuNjAxeiIgZmlsbD0iIzAwMDAwMCIvPgoJPC9nPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+Cjwvc3ZnPgo=" />
+                            </div>
+                            <div class="twoColsPref">
+                                <div>&nbsp;</div>
+                                <div style="margin-left:2px;">&nbsp;</div>
+                                <div style="margin-top:2px;">&nbsp;</div>
+                                <div style="margin-top:2px;margin-left:2px;">&nbsp;</div>
+                            </div>
+                            <div id="toolsButton" messageskey="tools" class="downloadButton toolsButton localizedSpan active">Tools</div>
+                        </td>
+                    </tr>
+                    <tr id="toolsDiv">
+                        <td colspan="2">
+                            <div class="filters" style="width:100%;">
+                                <div id="sizeTab" tabindex="0">
+                                    <span class="menuLabel">Size</span><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+                                    <div class="selectMenu sizeMenu">
+                                        <div sizeConf="any" class="selected">Any</div>
+                                        <div sizeConf="small">Small</div>
+                                        <div sizeConf="medium">Medium</div>
+                                        <div sizeConf="large">Large</div>
+                                        <div sizeConf="custom">At least <input type="number" value="0" id="minwidthinput" class="filterInput noSelect">&times;<input type="number" value="0" id="minheightinput" class="filterInput noSelect"></div>
+                                        <div class="savesize" saveSize="true">Save size selection</div>
+                                    </div>
+                                </div>
+                                <div tabindex="1">
+                                    <span class="menuLabel">Type</span><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+                                    <div class="selectMenu typeMenu">
+                                        <div typeConf="any" class="selected">Any</div>
+                                        <div typeConf="JPG">JPG</div>
+                                        <div typeConf="GIF">GIF</div>
+                                        <div typeConf="PNG">PNG</div>
+                                        <div typeConf="BMP">BMP</div>
+                                        <div typeConf="SVG">SVG</div>
+                                        <div typeConf="WEBP">WEBP</div>
+                                        <div typeConf="ICO">ICO</div>
+                                        <div typeConf="TIFF">TIFF</div>
+                                    </div>
+                                </div>
+                                <div tabindex="2">
+                                    <span class="menuLabel">Layout</span><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+                                    <div class="selectMenu layoutMenu">
+                                        <div layoutConf="any" class="selected">Any</div>
+                                        <div layoutConf="square">Square</div>
+                                        <div layoutConf="wide">Wide</div>
+                                        <div layoutConf="tall">Tall</div>
+                                    </div>
+                                </div>
+                                <div tabindex="3">
+                                    <span class="menuLabel">URL</span><svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+                                    <div class="selectMenu">
+                                        <div style="padding-left:10px;"><input type="text" id="filterbyurlinput" autocomplete="off" placeholder="Filter by URL or name" style="height:30px;width:100%;font-size:14px;box-sizing:border-box;padding-left:6px;border:1px solid #c5c5c5;border-radius:5px;background:#fff;" class="noSelect"/></div>
+                                    </div>
+                                </div>
+                                <div class="clearFilters" style="display:none;">
+                                    <span class="menuLabel">Clear</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div id="imgsContainer">
+            <div id="spinner" class="spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>
+        </div>
+    </div>
+    <script type="text/javascript" src="external/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="external/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="popup.js"></script>
+    <div id="manyfiles" style="display:none;position: absolute;width: 100%;height: 100%;z-index: 1000;background: rgba(0,0,0,0.4);">
+        <div style="padding:0px 10px 10px 10px;box-sizing: border-box;position: absolute;top: 50%;left: 50%;background: #fff;width: 400px;height: 320px;margin-left: -200px;margin-top: -125px;box-shadow: 0px 0px 20px rgba(0,0,0,0.6);border-radius: 5px;font-size:15px;">
+            <h2><span messagesKey="manyfilesnum" class="localizedSpan" id="manyfilesnum">Download %n images</span></h2>
+            <p id="chromemanyfileswarning">
+                <span messagesKey="makesurechrome" class="localizedSpan">Make sure you don't have selected the 'Ask where to save each file before downloading' checkbox in <a href="chrome://settings/downloads" target="_blank">Chrome Settings --> Advanced --> Download section.</a></span><br>
+                <br>
+                <span messagesKey="otherwisechrome" class="localizedSpan">Otherwise Chrome by design will popup the Save as... dialog for each file :-(</span>
+            </p>
+            <p id="firefoxmanyfileswarning" style="display:none;">
+                <span messagesKey="makesurefirefox" class="localizedSpan">Make sure you don't have selected the 'Always ask where to save files' checkbox in Firefox Settings --> Files and Applications section.</span><br>
+                <br>
+                <span messagesKey="otherwisefirefox" class="localizedSpan">Otherwise Firefox by design will popup the Save as... dialog for each file :-(</span>
+            </p>
+            <p>
+                <input type="checkbox" name="donotbotherme" id="donotbotherme"/> <label for="donotbotherme" messagesKey="donotshowdialogagain" class="localizedSpan">Do not show this dialog again</label>
+            </p>
+            <div style="position: relative;left:84px;top:12px;font-size:16px;">
+                <div id="manyfilesdownload" class="downloadButton">
+                    <img style="left:12px;" src='data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTYuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjI0cHgiIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAwIDUyLjc1NiA1Mi43NTciIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUyLjc1NiA1Mi43NTc7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPGc+Cgk8Zz4KCQk8Zz4KCQkJPHBhdGggZD0iTTI2LjEwNiwyOS4wNTlsMTAuNTIzLTEwLjUyM2MxLjA0Ny0xLjAyNCwwLjgxMy0xLjc0Ni0wLjY0OS0xLjc0NmgtNS44NzNMMzAuMTA4LDRjMC0yLjIwOS0xLjc5LTQtNC00bDAsMCAgICAgYy0yLjIwOSwwLTQsMS43OTEtNCw0bC0wLjAwMSwxMi43ODloLTUuODc2Yy0xLjQ2Mi0wLjAwMS0xLjY5MywwLjcyMy0wLjY0NiwxLjc0N0wyNi4xMDYsMjkuMDU5eiIgZmlsbD0iI0ZGRkZGRiIvPgoJCQk8cGF0aCBkPSJNNDkuMDI3LDI1Ljc3aC02LjA0OWMtMC41NTQsMC0xLDAuNDQ3LTEsMXYxNy45MzlIMTAuNzhWMjYuNzdjMC0wLjU1My0wLjQ0Ny0xLTEtMUgzLjczMWMtMC41NTMsMC0xLDAuNDQ3LTEsMXYyMC40NjQgICAgIGMwLDMuMDQ1LDIuNDc5LDUuNTIyLDUuNTI0LDUuNTIyaDM2LjI0OGMzLjA0NiwwLDUuNTIzLTIuNDc5LDUuNTIzLTUuNTIyVjI2Ljc3QzUwLjAyNywyNi4yMTcsNDkuNTgxLDI1Ljc3LDQ5LjAyNywyNS43N3oiIGZpbGw9IiNGRkZGRkYiLz4KCQk8L2c+Cgk8L2c+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPC9zdmc+Cg==' />
+                    <span messagesKey="download" class="localizedSpan">Download</span>
+                </div>
+                <div id="manyfilescancel" class="downloadButton cancelButton" style="padding-left:12px;margin-left:10px;">
+                    <span messagesKey="cancel" class="localizedSpan">Cancel</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="prefsDiv" style="display:none;position: absolute;width: 100%;height: 100%;z-index: 1000;background: rgba(0,0,0,0.4);">
+        <div style="padding:10px 10px 10px 10px;box-sizing: border-box;position: absolute;top: 50%;left: 50%;transform: translate(-50%,-50%);background: #fff;width: 400px;box-shadow: 0px 0px 20px rgba(0,0,0,0.6);border-radius: 5px;font-size:14px;">
+            <div><big>Preferences</big></div><br>
+            <div style="position:relative;">
+                <input type="checkbox" id="biggerview"/><label for="biggerview">Bigger layout</label>
+            </div>
+            <div style="position:relative;">
+                <input type="checkbox" id="twocols"/><label for="twocols">Display images in two columns</label>
+            </div>
+            <div id="downloadseparatefoldercont">
+                <input type="checkbox" id="downloadseparatefolder" /><label for="downloadseparatefolder">Specify Download location</label>
+                <div style="display:none;padding:10px 5px 5px 18px;" id="downloadocationcontainer">
+                    <input style="margin:6px 6px 6px 0px;" type="radio" id="useseparatefolder" name="downloadfolderpref" value="basedonurl" checked="checked"/><label for="useseparatefolder">create folder based on url. </label><br>
+                    <input style="margin:6px 6px 6px 0px;" type="radio" id="usesamefolder" name="downloadfolderpref" value="usefixedfoldername"/><label for="usesamefolder">use always this folder: </label><input type="text" id="savefoldername" value="imageye"></label><br>
+                    <span class="prefsTip">
+                        Make sure that "Ask where to save each file before downloading" is unchecked in Browser Settings
+                    </span>
+                </div>
+            </div>
+            <div>
+                <input type="checkbox" id="donotbother" /><label for="donotbother">Do not show many files warning.</label>
+            </div>
+            <div style="position:relative;">
+                <input type="checkbox" id="web2jpg"/><label for="web2jpg">Convert WEBP to JPEG (beta)</label>
+                <div class="new" style="position: relative;top: -8px;right: 0px;left: -4px;">new</div>
+            </div>
+            <div>
+                <input type="checkbox" id="allframes"/><label for="allframes">Search in all frames, including adv and social.</label>
+            </div>
+            <div style="position: relative;float:left;left:50%;padding-top:20px;padding-bottom: 10px;transform:translateX(-50%);">
+                <div id="saveprefs" class="downloadButton" style="padding-right:26px;padding-left:26px;">
+                    Save
+                </div>
+                <div id="saveprefscancel" class="downloadButton cancelButton" style="padding-left:12px;margin-left:10px;">
+                    Cancel
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="ratingDiv" style="display:none;position: absolute;width: 100%;height: 100%;z-index: 1000;background: rgba(0,0,0,0.4);">
+        <div style="padding:10px 10px 10px 10px;box-sizing: border-box;position: absolute;top: 50%;left: 50%;background: #fff;width: 400px;height: 167px;margin-left: -200px;margin-top: -83px;box-shadow: 0px 0px 20px rgba(0,0,0,0.6);border-radius: 5px;">
+            <div><big>&hearts; Rate Us</big></div><br>
+            <div style="padding:5px 0px;">
+                If you love this extension, please take a moment to rate it 
+            </div>
+            <div style="position: relative;left:94px;top:18px;">
+                <div id="ratebutton" class="downloadButton" style="padding-right:26px;padding-left:26px;">
+                    Rate
+                </div>
+                <div id="rateclose" class="downloadButton cancelButton" style="padding-left:12px;margin-left:10px;">
+                    Close
+                </div>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>
+
