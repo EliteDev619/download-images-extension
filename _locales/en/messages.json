@@ -1,0 +1,63 @@
+{
+   "appDesc": {
+      "message": "Find and download all images on a web page with Image downloader."
+   },
+   "appName": {
+      "message": "Image downloader - Imageye"
+   },
+   "cancel": {
+      "message": "Cancel"
+   },
+   "deselectall": {
+      "message": "Deselect all"
+   },
+   "donotshowdialogagain": {
+      "message": "Do not show this dialog again"
+   },
+   "download": {
+      "message": "Download"
+   },
+   "filterbyurlinputplaceholder": {
+      "message": "Filter by url or name"
+   },
+   "foundLabel": {
+      "message": "Found %n images",
+      "translation_note": "leave the '%n', it will be replaces with the number of images found, ie 'Found 22 images'"
+   },
+   "heightLabel": {
+      "message": "height",
+      "translation_note": "the height is intended as the pixel 'height' of the image"
+   },
+   "makesurechrome": {
+      "message": "Make sure you don't have selected the 'Ask where to save each file before downloading' checkbox in \u003Ca id='saveaslink' href='#' target='_blank'>Chrome Settings --> Advanced --> Download section.\u003C/a>"
+   },
+   "makesurefirefox": {
+      "message": "Make sure you don't have selected the 'Always ask where to save files' checkbox in Firefox Settings --> Files and Applications section."
+   },
+   "manyfilesnum": {
+      "message": "Download %n images",
+      "translation_note": "leave the '%n', it will be replaces with the number of download images , ie 'Download 22 images'"
+   },
+   "openinnewtab": {
+      "message": "Open in new tab"
+   },
+   "otherwisechrome": {
+      "message": "Otherwise Chrome by design will popup the Save as... dialog for each file :-("
+   },
+   "otherwisefirefox": {
+      "message": "Otherwise Firefox by design will popup the Save as... dialog for each file :-("
+   },
+   "searchingImagesLabel": {
+      "message": "Searching images..."
+   },
+   "searchsimilarimgs": {
+      "message": "Reverse Image Search by Google"
+   },
+   "selectall": {
+      "message": "Select all"
+   },
+   "widthLabel": {
+      "message": "width",
+      "translation_note": "the width is intended as the pixel 'width' of the image"
+   }
+}
