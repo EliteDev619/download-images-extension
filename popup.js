@@ -288,7 +288,7 @@ var fastImages={
                 return;
             }
             //var img=document.createElement("img");
-            //img.src="https://www.marenauta.com/fastImageserror?url="+fastImages.currUrl;
+            
             var message="Something went wrong, Please refresh this page."
             $("#imgsContainer")[0].innerHTML="<br><br><br><br><br><br><br><br><br><br><br><br><br><br><center>"+message+"<br><br><a href='#' id='reloada'>Refresh</a></center><br><br><br><br>";
             $("#reloada")[0].onclick = function() {
@@ -354,7 +354,7 @@ var fastImages={
         }
     },
     openRatingTab: function(){
-        window.open("https://chrome.google.com/webstore/detail/fastImages-image-downloader/agionbommeaifngbhincahgmoflcikhm/reviews");
+        window.open("https://chrome.google.com/");
     },
     downloadImages:async function(){
         //39sec 204 immagini - con 300ms
