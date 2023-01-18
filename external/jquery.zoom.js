@@ -29,7 +29,6 @@
 			position = $target.css('position'),
 			$source = $(source);
 
-		// The parent element needs positioning so that the zoomed element can be correctly positioned within.
 		target.style.position = /(absolute|fixed)/.test(position) ? position : 'relative';
 		target.style.overflow = 'hidden';
 		img.style.width = img.style.height = '';
@@ -84,7 +83,7 @@
 		return this.each(function () {
 			var
 			settings = $.extend({}, defaults, options || {}),
-			//target will display the zoomed image
+
 			target = settings.target && $(settings.target)[0] || this,
 			//source will provide zoom location info (thumbnail)
 			source = this,
